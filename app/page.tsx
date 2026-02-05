@@ -38,11 +38,18 @@ export default function Home() {
       counts[personality] = counts[personality] + 1;
     });
 
-    const winner = (Object.keys(counts) as PersonalityType[]).reduce((a, b) =>
-      counts[a] > counts[b] ? a : b
+    // Find the maximum count
+    const maxCount = Math.max(...Object.values(counts));
+
+    // Get all personalities with the maximum count
+    const winners = (Object.keys(counts) as PersonalityType[]).filter(
+      personality => counts[personality] === maxCount
     );
 
-    return personalityResults[winner];
+    // Randomly pick one if there's a tie
+    const randomWinner = winners[Math.floor(Math.random() * winners.length)];
+
+    return personalityResults[randomWinner];
   };
 
   const resetQuiz = () => {
