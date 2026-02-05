@@ -10,6 +10,12 @@ interface QuizResultProps {
 }
 
 export default function QuizResult({ result, onRetake }: QuizResultProps) {
+  // Helper function to determine article (a vs an)
+  const getArticle = (word: string): string => {
+    const firstLetter = word.charAt(0).toLowerCase();
+    return ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
+  };
+
   // Flower emoji mapping
   const flowerEmojis: Record<string, string> = {
     'Sunflower': '🌻',
@@ -76,10 +82,10 @@ export default function QuizResult({ result, onRetake }: QuizResultProps) {
         {flowerEmojis[result.flower]}
       </div>
       <h2 className="text-2xl sm:text-3xl mb-4">
-        you're a {result.flower.toLowerCase()}!
+        you're {getArticle(result.flower)} {result.flower.toLowerCase()}!
       </h2>
       <p className="text-lg sm:text-xl mb-2">
-        you're a {result.personality.toLowerCase()} {personalityEmojis[result.personality]}
+        you're {getArticle(result.personality)} {result.personality.toLowerCase()} {personalityEmojis[result.personality]}
       </p>
       <p className="text-base sm:text-lg opacity-80 mb-8">
         {result.tagline}~
