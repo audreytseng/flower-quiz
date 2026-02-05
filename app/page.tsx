@@ -1,65 +1,102 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { PersonalityType } from '@/app/types/quiz';
+import { questions, personalityResults } from '@/app/data/quiz-data';
+import QuizCard from '@/app/components/QuizCard';
+import QuizQuestion from '@/app/components/QuizQuestion';
+import QuizResult from '@/app/components/QuizResult';
 
 export default function Home() {
+  const [currentQuestion, setCurrentQuestion] = useState<number>(0);
+  const [answers, setAnswers] = useState<PersonalityType[]>([]);
+  const [showResults, setShowResults] = useState<boolean>(false);
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
+
+  const handleAnswerClick = (personality: PersonalityType) => {
+    const newAnswers = [...answers, personality];
+    setAnswers(newAnswers);
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      setShowResults(true);
+    }
+  };
+
+  const calculateResult = () => {
+    const counts: Record<PersonalityType, number> = {
+      'Bold Adventurer': 0,
+      'Gentle Soul': 0,
+      'Free Spirit': 0,
+      'Cheerful Optimist': 0,
+      'Vibrant Socialite': 0,
+      'Creative Visionary': 0
+    };
+
+    answers.forEach(personality => {
+      counts[personality] = counts[personality] + 1;
+    });
+
+    const winner = (Object.keys(counts) as PersonalityType[]).reduce((a, b) =>
+      counts[a] > counts[b] ? a : b
+    );
+
+    return personalityResults[winner];
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setShowResults(false);
+    setShowWelcome(true);
+  };
+
+  const startQuiz = () => {
+    setShowWelcome(false);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-[#f5f5f6]">
+      <div className={showResults ? "quiz-card-wrapper w-full flex justify-center" : "w-full flex justify-center"}>
+        <QuizCard>
+        {showWelcome && (
+          <div className="text-center px-4 sm:px-8 py-4 fade-in">
+            <h1 className="text-2xl sm:text-3xl mb-6">
+              what's your flower personality?
+            </h1>
+            <p className="text-base sm:text-lg mb-8 opacity-80">
+              discover your flower in 7 questions 💐
+            </p>
+            <button
+              onClick={startQuiz}
+              className="px-8 py-3 rounded-2xl transition-all duration-200
+                         bg-white
+                         border border-gray-200
+                         hover:shadow-lg hover:scale-105 hover:bg-gray-50"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              start quiz
+            </button>
+          </div>
+        )}
+
+        {!showWelcome && !showResults && (
+          <QuizQuestion
+            key={currentQuestion}
+            question={questions[currentQuestion]}
+            onAnswerClick={handleAnswerClick}
+            questionNumber={currentQuestion + 1}
+          />
+        )}
+
+        {showResults && (
+          <QuizResult
+            result={calculateResult()}
+            onRetake={resetQuiz}
+          />
+        )}
+        </QuizCard>
+      </div>
     </div>
   );
 }
